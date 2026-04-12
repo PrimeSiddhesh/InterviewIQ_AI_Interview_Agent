@@ -3,9 +3,29 @@ import { BsRobot } from "react-icons/bs";
 import { IoSparkles } from "react-icons/io5";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
+import { signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '../utils/firebase';
 
 
 function Auth() {
+
+
+
+const handleGoogleAuth = async () => {
+
+  try {
+    const response=await signInWithPopup(auth, provider);
+    console.log(response);
+  } catch (error) {
+    console.error("Error during Google authentication:", error);
+  }
+
+}
+
+
+
+
+
   return (
     <div className="w-full min-h-screen bg-[#f3f3f3] flex items-center justify-center px-6 py-20">
       
@@ -41,6 +61,7 @@ track your progress, and unlock detailed performance insights.
 
 
 <motion.button
+onClick={handleGoogleAuth}
 whileHover={{opacity:0.9 , scale:1.03}}
 whileTap={{opacity:1 , scale:0.99}}
 
