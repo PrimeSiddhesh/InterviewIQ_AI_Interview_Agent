@@ -9,6 +9,7 @@
 import User from "../models/user.model.js";
 import genToken from "../config/token.js";
 
+
 export const googleAuth=async(req,res)=>{
     try {
         //google auth logic
