@@ -10,7 +10,7 @@ import { ServerUrl } from '../App';
 
 function Auth() {
 
-
+const dispatch=useDispatch();
 
 const handleGoogleAuth = async () => {
 
@@ -24,11 +24,12 @@ const handleGoogleAuth = async () => {
     let email=User.email;
 
     const result=await axios.post(ServerUrl + "/api/auth/google", { name, email }, { withCredentials: true });
-    console.log(result.data);
+    dispatch(setUserData(result.data));
 
 
   } catch (error) {
     console.error("Error during Google authentication:", error);
+    dispatch(setUserData(null));
   }
 
 }
