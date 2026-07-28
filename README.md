@@ -19,18 +19,18 @@ The architecture is divided into a robust React-based frontend client, an Expres
 
 ```mermaid
 graph TD
-    Client[Client (React + Vite + Tailwind)] -->|HTTP/REST| API[Backend Server (Node + Express)]
-    API -->|Mongoose| DB[(MongoDB)]
+    Client["Client (React + Vite + Tailwind)"] -->|"HTTP/REST"| API["Backend Server (Node + Express)"]
+    API -->|"Mongoose"| DB[("MongoDB")]
     
     subgraph Services
-    API -->|PDF Parsing| PDFJS[pdfjs-dist]
-    API -->|Prompt & Evaluate| Gemini[Google Gemini API]
-    API -->|Payments| Razorpay[Razorpay API]
-    API -->|Auth| JWT[JWT Auth Middleware]
+    API -->|"PDF Parsing"| PDFJS["pdfjs-dist"]
+    API -->|"Prompt & Evaluate"| Gemini["Google Gemini API"]
+    API -->|"Payments"| Razorpay["Razorpay API"]
+    API -->|"Auth"| JWT["JWT Auth Middleware"]
     end
     
-    Client -->|State Mgmt| Redux[Redux Toolkit]
-    Client -->|Generate Report| jsPDF[jsPDF]
+    Client -->|"State Mgmt"| Redux["Redux Toolkit"]
+    Client -->|"Generate Report"| jsPDF["jsPDF"]
 ```
 
 ---
