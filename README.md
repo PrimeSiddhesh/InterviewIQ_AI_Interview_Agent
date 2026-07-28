@@ -9,13 +9,35 @@
 
 **InterviewIQ** is an advanced AI-driven mock interview platform designed to help job seekers prepare for real-world interviews. By analyzing your resume and understanding your specific role, experience level, and skills, the AI agent conducts a realistic, timed interview and provides immediate, actionable feedback on your answers using the powerful **Google Gemini API**.
 
-This project showcases a complete Full-Stack architecture with AI integration, demonstrating proficiency in modern web development, API design, and AI utilization.
+This project showcases a complete Full-Stack architecture with AI integration, demonstrating proficiency in modern web development, API design, system architecture, and AI utilization.
 
 ---
 
-## 🔄 Project Architecture & User Flow
+## 🏗️ Overall Project System Design
 
-Understanding the core flow of the application demonstrates the complexity and state management handled in this project:
+The architecture is divided into a robust React-based frontend client, an Express/Node backend API, an AI service layer (Gemini), and a MongoDB database for state persistence.
+
+```mermaid
+graph TD
+    Client[Client (React + Vite + Tailwind)] -->|HTTP/REST| API[Backend Server (Node + Express)]
+    API -->|Mongoose| DB[(MongoDB)]
+    
+    subgraph Services
+    API -->|PDF Parsing| PDFJS[pdfjs-dist]
+    API -->|Prompt & Evaluate| Gemini[Google Gemini API]
+    API -->|Payments| Razorpay[Razorpay API]
+    API -->|Auth| JWT[JWT Auth Middleware]
+    end
+    
+    Client -->|State Mgmt| Redux[Redux Toolkit]
+    Client -->|Generate Report| jsPDF[jsPDF]
+```
+
+---
+
+## ⚙️ How It Works (Complete Flow Design)
+
+The user journey and data flow are meticulously designed to simulate a real interview process while monetizing through a credits system:
 
 1. **Authentication & Onboarding**: 
    - User signs up/logs in securely.
@@ -24,16 +46,17 @@ Understanding the core flow of the application demonstrates the complexity and s
    - Candidate uploads their resume in PDF format. 
    - The server parses the PDF text and sends it to the Gemini API to extract key information (Role, Experience, Skills, Projects) into structured JSON.
 3. **Interview Configuration**: 
-   - Candidate confirms the extracted details and selects the interview mode.
+   - Candidate confirms the extracted details and selects the interview mode (HR or Technical).
 4. **Dynamic Question Generation**: 
-   - The backend constructs a highly detailed prompt containing the candidate's profile and requests exactly 5 progressive questions (Easy to Hard) from the Gemini API.
+   - The backend constructs a highly detailed prompt containing the candidate's profile and requests exactly 5 progressive questions (Easy to Hard) from the Gemini API. 
+   - *Cost:* 50 credits are deducted from the user's account.
 5. **The Interview Experience**: 
    - Candidate is presented with questions one by one.
    - A strict timer is enforced (e.g., 60s for easy, 120s for hard). 
    - The candidate submits their answer before the timer runs out.
 6. **Real-Time AI Evaluation**: 
    - Each answer is sent back to Gemini API alongside the original question and candidate's profile.
-   - Gemini evaluates the response and returns a score and constructive feedback.
+   - Gemini evaluates the response based on correctness, confidence, and communication, returning a score and constructive feedback.
 7. **Performance Analytics & Report**: 
    - Once completed, the candidate views a detailed dashboard with Recharts visualizations.
    - Candidate can download a comprehensive PDF report of their interview performance using jsPDF.
@@ -42,38 +65,72 @@ Understanding the core flow of the application demonstrates the complexity and s
 
 ---
 
+## 🗄️ Database Schema Design
+
+The platform uses MongoDB to maintain application state across Users, Interviews, and Payments.
+
+### 1. User Schema (`User`)
+Handles authentication, profile info, and credit balance.
+- `name` (String, required)
+- `email` (String, unique, required)
+- `credits` (Number, default: 100)
+
+### 2. Interview Schema (`Interview`)
+Stores the entire state of an interview, including AI-generated questions and user answers.
+- `userId` (ObjectId, ref: "User")
+- `role` (String)
+- `experience` (String)
+- `mode` (String, enum: ["HR", "Technical"])
+- `resumeText` (String)
+- `questions` (Array of sub-documents):
+  - `question` (String)
+  - `difficulty` (String)
+  - `timeLimit` (Number)
+  - `answer` (String)
+  - `feedback` (String)
+  - `score` (Number)
+  - `confidence` (Number)
+  - `communication` (Number)
+  - `correctness` (Number)
+- `finalScore` (Number, default: 0)
+- `status` (String, enum: ["Incompleted", "completed"])
+
+### 3. Payment Schema (`Payment`)
+Tracks transactional records for credit top-ups via Razorpay.
+- `userId` (ObjectId, ref: "User")
+- `planId` (String)
+- `amount` (Number)
+- `credits` (Number)
+- `razorpayOrderId` (String)
+- `razorpayPaymentId` (String)
+- `status` (String, enum: ["created", "paid", "failed"])
+
+---
+
 ## ✨ Key Features (Wow Factors for Recruiters)
 
-### 📄 1. Intelligent Resume Parsing (PDF)
+### 📄 Intelligent Resume Parsing (PDF)
 - Users can upload their resumes in PDF format.
 - The backend utilizes `pdfjs-dist` to read the document and the **Gemini AI model** to smartly extract structured data: **Role, Experience, Projects, and Skills**.
-- *Impact:* Demonstrates the ability to process unstructured file data and convert it into a structured format using AI.
 
-### 🧠 2. Dynamic, Context-Aware Question Generation
-- Gone are the days of static question banks. InterviewIQ uses advanced prompt engineering (via the **Gemini API**) to generate exactly 5 highly relevant interview questions.
-- **Progressive Difficulty:** The interview intelligently scales: Question 1 & 2 (Easy) → Question 3 & 4 (Medium) → Question 5 (Hard).
-- Questions are strictly tailored to the candidate's uploaded resume details, mimicking a real human interviewer.
-- *Impact:* Highlights strong prompt engineering skills and integration with Large Language Models (LLMs).
+### 🧠 Dynamic, Context-Aware Question Generation
+- Gone are the days of static question banks. InterviewIQ uses advanced prompt engineering (via the **Gemini API**) to generate exactly 5 highly relevant interview questions tailored specifically to the candidate's uploaded resume details.
 
-### ⏱️ 3. Real-time AI Answer Evaluation
+### ⏱️ Real-time AI Answer Evaluation
 - Users submit their answers under strict time limits.
 - The **Gemini API** evaluates the submitted answers against the generated questions, assigning a **Score** and providing detailed **Constructive Feedback**.
-- *Impact:* Shows ability to build complex, stateful flows where AI acts as an evaluator based on defined rubrics.
 
-### 💳 4. Credit-Based Economy & Monetization
+### 💳 Credit-Based Economy & Monetization
 - Incorporates a fully functional credit system. Users consume credits (e.g., 50 credits per interview).
 - Integrated with **Razorpay** for seamless payment processing to top up credits.
-- *Impact:* Demonstrates an understanding of SaaS monetization models, third-party payment gateway integration, and transaction handling.
 
-### 📊 5. Comprehensive Analytics & Reporting
+### 📊 Comprehensive Analytics & Reporting
 - Visualizes interview performance over time using **Recharts**.
 - Users can download their complete interview performance reports as beautifully formatted PDFs using **jsPDF** and **jspdf-autotable**.
-- *Impact:* Proves ability to handle client-side document generation and complex data visualization.
 
-### 🎨 6. Premium User Interface & Experience
+### 🎨 Premium User Interface & Experience
 - Built with **React**, **Vite**, and **TailwindCSS** for a highly responsive, modern design.
 - Uses **Framer Motion** for smooth, micro-animations that make the app feel alive and premium.
-- State management handled efficiently using **Redux Toolkit**.
 
 ---
 
@@ -154,7 +211,8 @@ npm run dev
 1. **End-to-End Execution:** This isn't just a basic CRUD app. It combines file processing, AI orchestration, real-time evaluation, payment processing, and document generation into one cohesive product.
 2. **AI as a Core Feature, Not an Afterthought:** The AI isn't just a chatbot; it actively parses documents, personalizes content, and evaluates user input dynamically via Gemini.
 3. **Production-Ready Concerns:** Handles edge cases like timeouts, empty inputs, token limits, and secure transactions (Razorpay).
-4. **Modern UI/UX:** The use of Tailwind and Framer Motion shows a strong eye for design and user experience, which is crucial for modern web development roles.
+4. **Complex State & Architecture:** Managing timers on the client, persisting incomplete interviews in MongoDB, and processing payments show mastery of state flows and system design.
+5. **Modern UI/UX:** The use of Tailwind and Framer Motion shows a strong eye for design and user experience, which is crucial for modern web development roles.
 
 ---
 *Built to crack interviews, by cracking interviews.*
