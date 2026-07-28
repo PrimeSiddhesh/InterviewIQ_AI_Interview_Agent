@@ -7,9 +7,18 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
+**🔴 Live Demo:** [https://interviewiq-ai-interview-agent-1.onrender.com](https://interviewiq-ai-interview-agent-1.onrender.com)
+
 **InterviewIQ** is an advanced AI-driven mock interview platform designed to help job seekers prepare for real-world interviews. By analyzing your resume and understanding your specific role, experience level, and skills, the AI agent conducts a realistic, timed interview and provides immediate, actionable feedback on your answers using the powerful **Google Gemini API**.
 
 This project showcases a complete Full-Stack architecture with AI integration, demonstrating proficiency in modern web development, API design, system architecture, and AI utilization.
+
+---
+
+## 🌐 Deployment
+Both the **Frontend** (React/Vite) and **Backend** (Node/Express) are deployed and hosted on **Render**. Following best practices for deployment, the application runs seamlessly in a production environment, ensuring high availability.
+
+- **Check it out live:** [InterviewIQ on Render](https://interviewiq-ai-interview-agent-1.onrender.com)
 
 ---
 
@@ -62,6 +71,42 @@ The user journey and data flow are meticulously designed to simulate a real inte
    - Candidate can download a comprehensive PDF report of their interview performance using jsPDF.
 8. **Monetization (Credits)**: 
    - When credits run low, users can purchase more via the integrated Razorpay payment gateway.
+
+---
+
+## 🧠 Technical Concepts Applied
+
+This project serves as a comprehensive showcase of modern full-stack development concepts:
+- **RESTful API Design:** Structured backend routes separating concerns between authentication, user management, payments, and AI integrations.
+- **State Management (Redux):** Centralized client-side state for user sessions and interview data to ensure a consistent UI without unnecessary prop-drilling.
+- **JWT Authentication & Authorization:** Secure, stateless user sessions using HTTP-only cookies and JSON Web Tokens.
+- **Generative AI & Prompt Engineering:** Designing system prompts that enforce strict output formats (JSON) and control AI hallucination, ensuring reliable data extraction and evaluation.
+- **Payment Gateway Integration:** Securely processing monetary transactions (Razorpay) and tracking payment status.
+
+---
+
+## 🚧 Challenges Faced & Solutions
+
+Building an AI-integrated application brought unique challenges:
+
+1. **Unpredictable AI Outputs:** 
+   - *Problem:* AI models often return unstructured text, breaking the application flow which expects JSON.
+   - *Solution:* Implemented strict prompt engineering (asking for exact JSON structures) and robust try-catch parsing blocks to gracefully handle malformed responses and prevent server crashes.
+2. **Handling Large PDF Resumes:** 
+   - *Problem:* Extracting raw text from PDFs can lead to massive token counts, slowing down the AI API and increasing costs.
+   - *Solution:* Used `pdfjs-dist` to cleanly extract and sanitize text, trimming excess whitespace and formatting the text before sending it to the Gemini API.
+3. **Interview Time Management:**
+   - *Problem:* Users could cheat by taking too long to answer.
+   - *Solution:* Implemented strict client-side timers coupled with backend validation. If a user exceeds the time limit, the backend defaults their score for that question to 0.
+
+---
+
+## 🔮 Future Improvements
+
+While the current version is fully functional and production-ready, there are exciting features planned for the future:
+- **Video/Audio Interviews:** Integrating WebRTC and Speech-to-Text APIs so users can speak their answers directly to the camera instead of typing, mimicking a true remote interview.
+- **WebSocket Integration:** Moving from REST to WebSockets for real-time streaming of AI questions and feedback to reduce loading latency.
+- **Company-Specific Mocks:** Allowing users to select a target company (e.g., Google, Amazon) to adjust the interview difficulty and question style based on historical company data.
 
 ---
 
