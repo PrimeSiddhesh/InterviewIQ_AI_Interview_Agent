@@ -17,6 +17,7 @@ export const askAi = async (messages) => {
                     role: msg.role === 'user' ? 'user' : 'model',
                     parts: [{ text: msg.content }]
                 });
+            }
         }
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${process.env.OPENROUTER_API_KEY}`;
