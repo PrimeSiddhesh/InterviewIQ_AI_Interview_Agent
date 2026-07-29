@@ -1,12 +1,11 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import Editor from "@monaco-editor/react";
 import maleVideo from "../assets/videos/male-ai.mp4"
 import femaleVideo from "../assets/videos/female-ai.mp4"
 import Timer from './Timer'
 import { motion } from "motion/react"
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
-import { useState } from 'react'
-import { useRef } from 'react'
-import { useEffect } from 'react'
+
 import axios from "axios"
 import { ServerUrl } from '../App'
 import { BsArrowRight } from 'react-icons/bs'
@@ -29,6 +28,12 @@ function Step2Interview({ interviewData, onFinish }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voiceGender, setVoiceGender] = useState("female");
   const [subtitle, setSubtitle] = useState("");
+  
+  const [activeTab, setActiveTab] = useState("text"); // 'text' or 'code'
+  const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("javascript");
+  const [codeOutput, setCodeOutput] = useState("");
+  const [isCompiling, setIsCompiling] = useState(false);
 
 
   const videoRef = useRef(null);
@@ -255,6 +260,8 @@ function Step2Interview({ interviewData, onFinish }) {
         interviewId,
         questionIndex: currentIndex,
         answer,
+        code: activeTab === 'code' ? code : undefined,
+        language: activeTab === 'code' ? language : undefined,
         timeTaken:
           currentQuestion.timeLimit - timeLeft,
       } , {withCredentials:true})
@@ -272,6 +279,9 @@ function Step2Interview({ interviewData, onFinish }) {
   const handleNext =async () => {
     setAnswer("");
     setFeedback("");
+    setCode("");
+    setCodeOutput("");
+    setActiveTab("text");
 
     if (currentIndex + 1 >= questions.length) {
       finishInterview();
@@ -407,11 +417,81 @@ function Step2Interview({ interviewData, onFinish }) {
             <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>{currentQuestion?.question}</div>
           </div>)
           }
-          <textarea
-            placeholder="Type your answer here..."
-            onChange={(e) => setAnswer(e.target.value)}
-            value={answer}
-            className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800" />
+          <div className="flex gap-2 mb-4 bg-gray-200 p-1 rounded-lg w-max">
+            <button 
+              onClick={() => setActiveTab("text")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'text' ? 'bg-white shadow text-emerald-600' : 'text-gray-600'}`}>
+              Text / Voice Answer
+            </button>
+            <button 
+              onClick={() => setActiveTab("code")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'code' ? 'bg-white shadow text-emerald-600' : 'text-gray-600'}`}>
+              Code Editor
+            </button>
+          </div>
+
+          {activeTab === 'text' ? (
+            <textarea
+              placeholder="Type your answer here..."
+              onChange={(e) => setAnswer(e.target.value)}
+              value={answer}
+              className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800" />
+          ) : (
+            <div className="flex-1 flex flex-col border border-gray-200 rounded-2xl overflow-hidden shadow-sm relative z-0">
+              <div className="bg-gray-100 px-4 py-2 flex justify-between items-center border-b border-gray-200">
+                <select 
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="bg-white border border-gray-300 rounded px-2 py-1 text-sm outline-none">
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="cpp">C++</option>
+                </select>
+                <button 
+                  onClick={() => {
+                    if (language === 'javascript') {
+                      setIsCompiling(true);
+                      setCodeOutput("Running...");
+                      setTimeout(() => {
+                        try {
+                          let logs = [];
+                          const originalLog = console.log;
+                          console.log = (...args) => logs.push(args.join(" "));
+                          const result = new Function(code)();
+                          console.log = originalLog;
+                          setCodeOutput(logs.join("\\n") + (result !== undefined ? "\\nReturns: " + result : ""));
+                        } catch (e) {
+                          setCodeOutput(e.toString());
+                        }
+                        setIsCompiling(false);
+                      }, 500);
+                    } else {
+                      setCodeOutput("Run feature for " + language + " requires a backend execution engine. \\n\\nYou can still submit your code, and the AI will perfectly evaluate its correctness, time/space complexity, and output!");
+                    }
+                  }}
+                  className="bg-emerald-600 text-white px-3 py-1 rounded text-sm hover:bg-emerald-700 transition">
+                  Run Code
+                </button>
+              </div>
+              <div className="flex-1">
+                <Editor
+                  height="100%"
+                  language={language}
+                  theme="vs-light"
+                  value={code}
+                  onChange={(val) => setCode(val)}
+                  options={{ minimap: { enabled: false }, fontSize: 14 }}
+                />
+              </div>
+              {codeOutput && (
+                <div className="h-32 bg-gray-900 text-green-400 p-3 font-mono text-sm overflow-y-auto border-t border-gray-700">
+                  <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">Terminal Output</div>
+                  <pre className="whitespace-pre-wrap">{codeOutput}</pre>
+                </div>
+              )}
+            </div>
+          )}
 
 
          {!feedback ? ( <div className='flex items-center gap-4 mt-6'>

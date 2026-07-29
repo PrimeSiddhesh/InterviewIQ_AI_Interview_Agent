@@ -145,24 +145,27 @@ You are a real human interviewer conducting a professional interview.
 
 Speak in simple, natural English as if you are directly talking to the candidate.
 
-Generate exactly 10 interview questions.
+Return STRICTLY a JSON array of strings containing exactly 10 interview questions.
+Example:
+[
+  "What are the four pillars of OOPs?",
+  "Problem Statement: Write a function to reverse a string. \nInput: 'hello' \nExpected Output: 'olleh'"
+]
 
 Strict Rules:
-- Each question must contain between 15 and 25 words.
-- Each question must be a single complete sentence.
-- Do NOT number them.
-- Do NOT add explanations.
-- Do NOT add extra text before or after.
-- One question per line only.
 - Keep language simple and conversational.
 - Questions must feel practical and realistic.
+- For "Technical" interviews, strongly focus on Service-Based Company (SBC) patterns (like TCS, Infosys, Wipro).
+- Include 3 to 5 coding/algorithmic questions (like Array, String, Basic Data Structures) formatted clearly with "Problem Statement", "Input", and "Expected Output".
+- Include core theoretical questions (OOPs, SQL, DBMS).
+- Only ask theoretical questions for "HR" or "Managerial" interviews.
 
 Difficulty progression:
 Questions 1-3 → easy
 Questions 4-7 → medium
 Questions 8-10 → hard
 
-Make questions based on the candidate’s role, experience,interviewMode, projects, skills, and resume details.
+Make questions based on the candidate’s role, experience, interviewMode, projects, skills, and resume details.
 `
       }
       ,
@@ -183,11 +186,18 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
 
     }
 
-    const questionsArray = aiResponse
-      .split("\n")
-      .map(q => q.trim())
-      .filter(q => q.length > 0)
-      .slice(0, 10);
+    const cleanedResponse = aiResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+    let questionsArray = [];
+    try {
+      questionsArray = JSON.parse(cleanedResponse).slice(0, 10);
+    } catch (e) {
+      // Fallback if not strictly JSON
+      questionsArray = cleanedResponse
+        .split("\n")
+        .map(q => q.trim())
+        .filter(q => q.length > 5)
+        .slice(0, 10);
+    }
 
     if (questionsArray.length === 0) {
       
@@ -226,15 +236,15 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
 
 export const submitAnswer = async (req, res) => {
   try {
-    const { interviewId, questionIndex, answer, timeTaken } = req.body
+    const { interviewId, questionIndex, answer, code, language, timeTaken } = req.body
 
     const interview = await Interview.findById(interviewId)
     const question = interview.questions[questionIndex]
 
-    // If no answer
-    if (!answer) {
+    // If no answer or code
+    if (!answer && !code) {
       question.score = 0;
-      question.feedback = "You did not submit an answer.";
+      question.feedback = "You did not submit an answer or code.";
       question.answer = "";
 
       await interview.save();
@@ -278,6 +288,7 @@ Rules:
 - If the answer is weak, score low.
 - If the answer is strong and detailed, score high.
 - Consider clarity, structure, and relevance.
+- If the user submitted code, evaluate the code for correctness, time/space complexity, and edge cases. Make sure to reflect this in the correctness score.
 
 Calculate:
 finalScore = average of confidence, communication, and correctness (rounded to nearest whole number).
@@ -307,7 +318,9 @@ Return ONLY valid JSON in this format:
         role: "user",
         content: `
 Question: ${question.question}
-Answer: ${answer}
+Text Answer: ${answer || "No text answer provided."}
+Code Submitted (${language || "None"}): 
+${code || "No code provided."}
 `
       }
     ];
