@@ -145,12 +145,13 @@ You are a real human interviewer conducting a professional interview.
 
 Speak in simple, natural English as if you are directly talking to the candidate.
 
-Return STRICTLY a JSON array of objects containing exactly 5 interview questions.
+Return STRICTLY a JSON array of objects containing exactly 10 interview questions.
 Example:
 [
   {
     "type": "theory",
-    "question": "What are the four pillars of OOPs?"
+    "question": "What are the four pillars of OOPs?",
+    "timeLimit": 120
   },
   {
     "type": "coding",
@@ -158,7 +159,8 @@ Example:
     "starterCode": "function reverseString(s) {\n  \n}",
     "testCases": [
       { "input": "'hello'", "expectedOutput": "'olleh'" }
-    ]
+    ],
+    "timeLimit": 600
   }
 ]
 
@@ -169,10 +171,12 @@ Strict Rules:
 - Include 3 to 5 coding/algorithmic questions (like Array, String, Basic Data Structures) formatted clearly with "Problem Statement", "Input", and "Expected Output".
 - Include core theoretical questions (OOPs, SQL, DBMS).
 - Only ask theoretical questions for "HR" or "Managerial" interviews.
+- Assign a "timeLimit" (in seconds) for each question based on what you think is sufficient. Give coding questions significantly more time (e.g. 360 to 1200 seconds). Theory questions should have less time (e.g. 60 to 180 seconds).
 
 Difficulty progression:
-Question 1-2 → medium
-Question 3-5 → hard
+Questions 1-3 → easy
+Questions 4-7 → medium
+Questions 8-10 → hard
 
 Make questions based on the candidate’s role, experience, interviewMode, projects, skills, and resume details.
 `
@@ -198,14 +202,14 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
     const cleanedResponse = aiResponse.replace(/```json/g, "").replace(/```/g, "").trim();
     let questionsArray = [];
     try {
-      questionsArray = JSON.parse(cleanedResponse).slice(0, 5);
+      questionsArray = JSON.parse(cleanedResponse).slice(0, 10);
     } catch (e) {
       // Fallback if not strictly JSON
       questionsArray = cleanedResponse
         .split("\n")
-        .map(q => ({ question: q.trim(), type: 'theory' }))
+        .map(q => ({ question: q.trim(), type: 'theory', timeLimit: 120 }))
         .filter(q => q.question.length > 5)
-        .slice(0, 5);
+        .slice(0, 10);
     }
 
     if (questionsArray.length === 0) {
@@ -225,8 +229,8 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
       mode,
       resumeText: safeResume,
       questions: questionsArray.map((q, index) => {
-        const difficulty = ["medium", "medium", "hard", "hard", "hard"][index] || "medium";
-        const timeLimit = difficulty === "easy" ? 360 : (difficulty === "medium" ? 720 : 1200);
+        const difficulty = ["easy", "easy", "easy", "medium", "medium", "medium", "medium", "hard", "hard", "hard"][index] || "medium";
+        const timeLimit = q.timeLimit || (difficulty === "easy" ? 360 : (difficulty === "medium" ? 720 : 1200));
         return {
           question: typeof q === 'string' ? q : q.question,
           type: q.type || 'theory',
