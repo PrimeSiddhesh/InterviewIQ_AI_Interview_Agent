@@ -18,14 +18,16 @@ export const analyzeResume = async (req, res) => {
 
     let resumeText = "";
 
-    // Extract text from all pages
+    // Extract text from all pages concurrently to speed up parsing
+    const pagePromises = [];
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const content = await page.getTextContent();
-
-      const pageText = content.items.map(item => item.str).join(" ");
-      resumeText += pageText + "\n";
+      pagePromises.push(pdf.getPage(pageNum).then(async (page) => {
+        const content = await page.getTextContent();
+        return content.items.map(item => item.str).join(" ");
+      }));
     }
+    const pagesText = await Promise.all(pagePromises);
+    resumeText = pagesText.join("\n");
 
 
     resumeText = resumeText
@@ -143,7 +145,7 @@ You are a real human interviewer conducting a professional interview.
 
 Speak in simple, natural English as if you are directly talking to the candidate.
 
-Generate exactly 5 interview questions.
+Generate exactly 10 interview questions.
 
 Strict Rules:
 - Each question must contain between 15 and 25 words.
@@ -156,11 +158,9 @@ Strict Rules:
 - Questions must feel practical and realistic.
 
 Difficulty progression:
-Question 1 → easy  
-Question 2 → easy  
-Question 3 → medium  
-Question 4 → medium  
-Question 5 → hard  
+Questions 1-3 → easy
+Questions 4-7 → medium
+Questions 8-10 → hard
 
 Make questions based on the candidate’s role, experience,interviewMode, projects, skills, and resume details.
 `
@@ -187,7 +187,7 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
       .split("\n")
       .map(q => q.trim())
       .filter(q => q.length > 0)
-      .slice(0, 5);
+      .slice(0, 10);
 
     if (questionsArray.length === 0) {
       
@@ -207,8 +207,8 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
       resumeText: safeResume,
       questions: questionsArray.map((q, index) => ({
         question: q,
-        difficulty: ["easy", "easy", "medium", "medium", "hard"][index],
-        timeLimit: [60, 60, 90, 90, 120][index],
+        difficulty: ["easy", "easy", "easy", "medium", "medium", "medium", "medium", "hard", "hard", "hard"][index] || "medium",
+        timeLimit: [60, 60, 60, 90, 90, 90, 90, 120, 120, 120][index] || 90,
       }))
     })
 
