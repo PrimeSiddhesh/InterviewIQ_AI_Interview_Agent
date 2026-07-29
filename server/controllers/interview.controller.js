@@ -145,11 +145,21 @@ You are a real human interviewer conducting a professional interview.
 
 Speak in simple, natural English as if you are directly talking to the candidate.
 
-Return STRICTLY a JSON array of strings containing exactly 10 interview questions.
+Return STRICTLY a JSON array of objects containing exactly 10 interview questions.
 Example:
 [
-  "What are the four pillars of OOPs?",
-  "Problem Statement: Write a function to reverse a string. \nInput: 'hello' \nExpected Output: 'olleh'"
+  {
+    "type": "theory",
+    "question": "What are the four pillars of OOPs?"
+  },
+  {
+    "type": "coding",
+    "question": "Write a function to reverse a string.",
+    "starterCode": "function reverseString(s) {\n  \n}",
+    "testCases": [
+      { "input": "'hello'", "expectedOutput": "'olleh'" }
+    ]
+  }
 ]
 
 Strict Rules:
@@ -194,8 +204,8 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
       // Fallback if not strictly JSON
       questionsArray = cleanedResponse
         .split("\n")
-        .map(q => q.trim())
-        .filter(q => q.length > 5)
+        .map(q => ({ question: q.trim(), type: 'theory' }))
+        .filter(q => q.question.length > 5)
         .slice(0, 10);
     }
 
@@ -215,11 +225,18 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
       experience,
       mode,
       resumeText: safeResume,
-      questions: questionsArray.map((q, index) => ({
-        question: q,
-        difficulty: ["easy", "easy", "easy", "medium", "medium", "medium", "medium", "hard", "hard", "hard"][index] || "medium",
-        timeLimit: [60, 60, 60, 90, 90, 90, 90, 120, 120, 120][index] || 90,
-      }))
+      questions: questionsArray.map((q, index) => {
+        const difficulty = ["easy", "easy", "easy", "medium", "medium", "medium", "medium", "hard", "hard", "hard"][index] || "medium";
+        const timeLimit = difficulty === "easy" ? 360 : (difficulty === "medium" ? 720 : 1200);
+        return {
+          question: typeof q === 'string' ? q : q.question,
+          type: q.type || 'theory',
+          starterCode: q.starterCode || "",
+          testCases: q.testCases || [],
+          difficulty,
+          timeLimit,
+        }
+      })
     })
 
     res.json({
@@ -318,6 +335,7 @@ Return ONLY valid JSON in this format:
         role: "user",
         content: `
 Question: ${question.question}
+${question.testCases?.length > 0 ? `Test Cases:\n${question.testCases.map((tc, i) => `Case ${i+1}: Input: ${tc.input}, Expected Output: ${tc.expectedOutput}`).join("\n")}` : ""}
 Text Answer: ${answer || "No text answer provided."}
 Code Submitted (${language || "None"}): 
 ${code || "No code provided."}

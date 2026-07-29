@@ -203,8 +203,16 @@ function Step2Interview({ interviewData, onFinish }) {
   useEffect(() => {
   if (!isIntroPhase && currentQuestion) {
     setTimeLeft(currentQuestion.timeLimit || 60);
+    if (currentQuestion.type === 'coding') {
+      setActiveTab('code');
+      if (currentQuestion.starterCode && !code) {
+        setCode(currentQuestion.starterCode);
+      }
+    } else {
+      setActiveTab('text');
+    }
   }
-}, [currentIndex]);
+}, [currentIndex, isIntroPhase]);
 
 
   useEffect(() => {
@@ -410,11 +418,30 @@ function Step2Interview({ interviewData, onFinish }) {
 
 
           {!isIntroPhase && (<div className='relative mb-6 bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm'>
-            <p className='text-xs sm:text-sm text-gray-400 mb-2'>
-              Question {currentIndex + 1} of {questions.length}
-            </p>
+            <div className="flex justify-between items-center mb-2">
+              <p className='text-xs sm:text-sm text-gray-400'>
+                Question {currentIndex + 1} of {questions.length}
+              </p>
+              {currentQuestion?.type === 'coding' && (
+                <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">Coding Challenge</span>
+              )}
+            </div>
 
-            <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>{currentQuestion?.question}</div>
+            <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed whitespace-pre-wrap'>{currentQuestion?.question}</div>
+            
+            {currentQuestion?.testCases?.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-600 mb-2">Sample Test Cases:</h4>
+                <div className="space-y-2">
+                  {currentQuestion.testCases.map((tc, idx) => (
+                    <div key={idx} className="bg-gray-800 text-green-400 text-xs p-2 rounded font-mono overflow-x-auto">
+                      <div><span className="text-gray-400">Input:</span> {tc.input}</div>
+                      <div><span className="text-gray-400">Output:</span> {tc.expectedOutput}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>)
           }
           <div className="flex gap-2 mb-4 bg-gray-200 p-1 rounded-lg w-max">

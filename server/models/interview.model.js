@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
 
 const questionsSchema = new mongoose.Schema({
-     question: String,
+  question: String,
+  type: { type: String, enum: ['theory', 'coding'], default: 'theory' },
+  starterCode: { type: String, default: "" },
+  testCases: [{
+    input: String,
+    expectedOutput: String
+  }],
   difficulty: String,
   timeLimit: Number,
   answer: String,
