@@ -25,8 +25,9 @@ function Auth({isModel = false}) {
 
             
         } catch (error) {
-            console.log(error)
-              dispatch(setUserData(null))
+            console.error(error)
+            alert(error.response?.data?.message || error.message || "Failed to sign in")
+            dispatch(setUserData(null))
         }
     }
   return (
