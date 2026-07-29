@@ -24,7 +24,10 @@ export const askAi = async (messages) => {
         
         const payload = {
             contents,
-            systemInstruction
+            systemInstruction,
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
         };
 
         const response = await axios.post(url, payload, {

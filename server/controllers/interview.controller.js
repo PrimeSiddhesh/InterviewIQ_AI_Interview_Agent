@@ -145,7 +145,7 @@ You are a real human interviewer conducting a professional interview.
 
 Speak in simple, natural English as if you are directly talking to the candidate.
 
-Return STRICTLY a JSON array of objects containing exactly 10 interview questions.
+Return STRICTLY a JSON array of objects containing exactly 5 interview questions.
 Example:
 [
   {
@@ -171,9 +171,8 @@ Strict Rules:
 - Only ask theoretical questions for "HR" or "Managerial" interviews.
 
 Difficulty progression:
-Questions 1-3 → easy
-Questions 4-7 → medium
-Questions 8-10 → hard
+Question 1-2 → medium
+Question 3-5 → hard
 
 Make questions based on the candidate’s role, experience, interviewMode, projects, skills, and resume details.
 `
@@ -199,14 +198,14 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
     const cleanedResponse = aiResponse.replace(/```json/g, "").replace(/```/g, "").trim();
     let questionsArray = [];
     try {
-      questionsArray = JSON.parse(cleanedResponse).slice(0, 10);
+      questionsArray = JSON.parse(cleanedResponse).slice(0, 5);
     } catch (e) {
       // Fallback if not strictly JSON
       questionsArray = cleanedResponse
         .split("\n")
         .map(q => ({ question: q.trim(), type: 'theory' }))
         .filter(q => q.question.length > 5)
-        .slice(0, 10);
+        .slice(0, 5);
     }
 
     if (questionsArray.length === 0) {
@@ -226,7 +225,7 @@ Make questions based on the candidate’s role, experience, interviewMode, proje
       mode,
       resumeText: safeResume,
       questions: questionsArray.map((q, index) => {
-        const difficulty = ["easy", "easy", "easy", "medium", "medium", "medium", "medium", "hard", "hard", "hard"][index] || "medium";
+        const difficulty = ["medium", "medium", "hard", "hard", "hard"][index] || "medium";
         const timeLimit = difficulty === "easy" ? 360 : (difficulty === "medium" ? 720 : 1200);
         return {
           question: typeof q === 'string' ? q : q.question,
