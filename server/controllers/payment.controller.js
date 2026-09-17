@@ -27,6 +27,7 @@ export const createOrder = async (req,res) => {
       status: "created",
     });
 
+    order.key_id = process.env.RAZORPAY_KEY_ID;
     return res.json(order);
 
     
