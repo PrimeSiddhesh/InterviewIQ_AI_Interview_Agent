@@ -11,7 +11,7 @@ import InterviewHistory from './pages/InterviewHistory'
 import Pricing from './pages/Pricing'
 import InterviewReport from './pages/InterviewReport'
 
-export const ServerUrl = import.meta.env.MODE === "development" ? "http://localhost:6000" : "https://interviewiq-ai-interview-agent.onrender.com";
+export const ServerUrl = import.meta.env.MODE === "development" ? "http://localhost:6000" : "https://interviewiq-ai-interview-agent-1.onrender.com";
 
 function App() {
 
