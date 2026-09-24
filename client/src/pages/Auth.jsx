@@ -1,5 +1,5 @@
 import React from 'react'
-import { BsRobot } from "react-icons/bs";
+
 import { IoSparkles } from "react-icons/io5";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
@@ -45,10 +45,7 @@ function Auth({isModel = false}) {
         bg-white shadow-2xl border border-gray-200
       `}>
             <div className='flex items-center justify-center gap-3 mb-6'>
-                <div className='bg-black text-white p-2 rounded-lg'>
-                    <BsRobot size={18}/>
-
-                </div>
+                <img src="/logo.png" alt="InterviewIQ Logo" className="w-10 h-10 rounded-lg object-contain" />
                 <h2 className='font-semibold text-lg'>InterviewIQ.AI</h2>
             </div>
 
